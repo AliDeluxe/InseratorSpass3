@@ -3,22 +3,22 @@
 <title>Anzeige Editieren</title>
 
 </head>
- 
+
 <body>
     <div id="header">
     		<h1> Anzeige editieren </h1>
     </div>
 
-  <form name="anzeige" action="/anzeige_editieren" method="post">
+  <form name="anzeige" action="" method="post">
 
     Titel: <br>
-    <input type="text" name="titel"  style="300px;" max="100"/> <br> <br>
+    <input type="text" name="titel" value=${titel} style="300px;" max="100"/> <br> <br>
 
     Preis(€): <br>
-    <input type="number" name="preis" step="0.01" min="0" style="width:100px;"/> <br> <br>
+    <input type="number" name="preis" value=${preis} step="0.01" min="0" style="width:100px;"/> <br> <br>
 
     Beschreibung: <br>
-    <input type="textarea" name="beschreibung" style="width:400px;height:100px;"/> <br> <br>
+    <input type="textarea" name="beschreibung" value=${beschreibung} style="width:400px;height:100px;" /> <br> <br>
 
     <h4> Kategorie: </h4>
 
@@ -38,7 +38,10 @@
 
   <input type="submit" value="Aktualisieren" />
   </form>
- 
+
+  <p> <font color = red> ${fehlermeldung} </font> </p>
+  <p ${erfolgreich}> <font color = green> <a href="anzeige_details?ID=${anzeigeid}">Anzeige wurde erfolgreich editiert.</a> </font> </p>
+
 
 </body>
 </html>

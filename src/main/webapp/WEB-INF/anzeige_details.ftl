@@ -22,21 +22,43 @@
     <p> ${beschreibung} </p>
 
 
-  <form name="kaufen" action="/anzeige_details?ID=${id}" method="post">
+  <a href="anzeige_editieren?ID=${id}">Editieren</a> <br> <br>
+
+
+  <form name="kaufen" action="" method="post">
   <input type="submit" value="Kaufen" />
   </form>
 
-  <form name="editieren" action="/anzeige_editieren" method="get">
-  <input type="submit" value="Editieren" />
-  </form>
-
-  <form name="löschen" action="/anzeige_details" method="post">
-  <input type="submit" name="loeschen" value="Löschen" />
-  </form>
+  <form name="löschen" action="" method="post">
+    <input type="submit" name="loeschen" value="Löschen" />
+    </form>
 
 
+  <br> <br>
 
- 
+  <h2> Kommentare: <h2>
+
+  <#list kommentarListe as kommentar>
+
+      <h4> ${kommentar.kommentator}: </h4>
+      <p> ${kommentar.text} </p>
+
+      <br>
+
+     </#list>
+
+     <br> <br>
+
+    <form name="anzeige" action="" method="post">
+
+        <h3>Schreibe einen Kommentar: </h3>
+        <input type="textarea" name="kommentar" style="width:400px;height:100px;"/> <br> <br>
+
+        <input type="submit" value="Kommentar abschicken" />
+
+        </form>
+
+
 
 </body>
 </html>

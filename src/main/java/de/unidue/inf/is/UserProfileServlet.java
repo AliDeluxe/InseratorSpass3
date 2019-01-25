@@ -20,17 +20,19 @@ import java.util.List;
 public final class UserProfileServlet extends HttpServlet {
 
     String username;
-    private static List<Anzeige> anzeigeListe = new ArrayList<>();
+    private static List<Anzeige> anzeigeListeAngeboten = new ArrayList<>();
+    private static List<Anzeige> anzeigeListeGekauft = new ArrayList<>();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         Connection con = null;
-        anzeigeListe.clear();
+        anzeigeListeAngeboten.clear();
+        anzeigeListeGekauft.clear();
 
         try {
             username = request.getParameter("Ersteller");
-            con = DBUtil.getConnection("insdb");
+            con = DBUtil.getExternalConnection("insdb");
             String sqlStatementBenutzer = "SELECT * FROM dbp47.benutzer WHERE benutzername = ?";
             PreparedStatement preparedStatementBenutzer = con.prepareStatement(sqlStatementBenutzer);
             preparedStatementBenutzer.setString(1, username);
@@ -71,10 +73,41 @@ public final class UserProfileServlet extends HttpServlet {
                 anzeige.setPreis(resultsAnzeigen.getDouble("preis"));
                 anzeige.setErstellungsDatum(resultsAnzeigen.getDate("erstellungsdatum"));
                 anzeige.setStatus(resultsAnzeigen.getString("status"));
-                anzeigeListe.add(anzeige);
+                anzeigeListeAngeboten.add(anzeige);
             }
 
-            request.setAttribute("anzeigeListe", anzeigeListe);
+            request.setAttribute("anzeigeListeAngeboten", anzeigeListeAngeboten);
+
+
+
+
+            String sqlStatementKauft = "SELECT * FROM dbp47.kauft WHERE benutzername = ?";
+            PreparedStatement preparedStatementKauft = con.prepareStatement(sqlStatementKauft);
+            preparedStatementKauft.setString(1, username);
+            ResultSet resultsKauft = preparedStatementKauft.executeQuery();
+
+            ResultSet resultsGekauft = null;
+
+            while(resultsKauft.next()) {
+
+                String sqlStatementGekauft = "SELECT * FROM dbp47.anzeige WHERE id = ?";
+                PreparedStatement preparedStatementGekauft = con.prepareStatement(sqlStatementGekauft);
+                preparedStatementGekauft.setShort(1,  resultsKauft.getShort("anzeigeID"));
+                resultsGekauft = preparedStatementGekauft.executeQuery();
+
+                while (resultsGekauft.next()) {
+                    Anzeige anzeige = new Anzeige();
+                    anzeige.setTitel(resultsGekauft.getString("titel"));
+                    anzeige.setPreis(resultsGekauft.getDouble("preis"));
+                    anzeige.setErstellungsDatum(resultsGekauft.getDate("erstellungsdatum"));
+                    anzeige.setStatus(resultsGekauft.getString("status"));
+                    anzeigeListeGekauft.add(anzeige);
+                }
+            }
+
+
+
+            request.setAttribute("anzeigeListeGekauft", anzeigeListeGekauft);
 
 
         } catch (SQLException e) {

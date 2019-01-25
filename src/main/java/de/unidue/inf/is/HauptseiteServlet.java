@@ -31,7 +31,7 @@ public final class HauptseiteServlet extends HttpServlet {
         anzeigeListe.clear();
 
         try {
-            con = DBUtil.getConnection("insdb");
+            con = DBUtil.getExternalConnection("insdb");
 
 
             String query = "SELECT * FROM dbp47.anzeige WHERE status = 'aktiv'";

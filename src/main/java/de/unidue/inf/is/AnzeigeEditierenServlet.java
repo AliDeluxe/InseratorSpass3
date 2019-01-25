@@ -15,7 +15,7 @@ import java.util.Date;
 /**
  * Einfaches Beispiel, das die Vewendung der Template-Engine zeigt.
  */
-public final class AnzeigeErstellenServlet extends HttpServlet {
+public final class AnzeigeEditierenServlet extends HttpServlet {
 
     private Connection con;
     private static final long serialVersionUID = 1L;
@@ -23,28 +23,58 @@ public final class AnzeigeErstellenServlet extends HttpServlet {
     private boolean ersterAufruf = true;
     private boolean keineFehler;
 
-    private String currentUser = "sonichu";
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-         if(keineFehler){
+        request.setAttribute("anzeigeid",request.getParameter("ID"));
+
+        con = null;
+
+        try {
+            con = DBUtil.getExternalConnection("insdb");
+
+            String sqlQuery = "SELECT * FROM dbp47.anzeige WHERE id=?";
+            PreparedStatement preparedStatementSelect = con.prepareStatement(sqlQuery);
+            preparedStatementSelect.setString(1,request.getParameter("ID"));
+            ResultSet resultsSelect = preparedStatementSelect.executeQuery();
+
+            while(resultsSelect.next()) {
+
+                request.setAttribute("titel", resultsSelect.getString("titel"));
+                request.setAttribute("preis", resultsSelect.getDouble("preis"));
+                request.setAttribute("beschreibung", resultsSelect.getString("text")+"-");
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if(keineFehler){
 
             request.setAttribute("fehlermeldung", "");
             request.setAttribute("erfolgreich", "");
-            request.getRequestDispatcher("anzeige_erstellen.ftl").forward(request, response);
+            request.getRequestDispatcher("anzeige_editieren.ftl").forward(request, response);
 
         } else {
 
-             if (ersterAufruf) {
-                 request.setAttribute("fehlermeldung", "");
-             }
+            if (ersterAufruf) {
+                request.setAttribute("fehlermeldung", "");
+            }
+
 
             request.setAttribute("anzeigeid", "");
             request.setAttribute("erfolgreich", "hidden");
-            request.getRequestDispatcher("anzeige_erstellen.ftl").forward(request, response);
+            request.getRequestDispatcher("anzeige_editieren.ftl").forward(request, response);
 
         }
+
     }
 
     @Override
@@ -53,38 +83,31 @@ public final class AnzeigeErstellenServlet extends HttpServlet {
 
         keineFehler = true;
         ersterAufruf = false;
-
-        String titel = request.getParameter("titel");
-        Double preis;
-
-        if(!request.getParameter("preis").isEmpty()) {
-            preis = Double.parseDouble(request.getParameter("preis"));
-        } else {
-            keineFehler = false;
-            preis = 0d;
-            request.setAttribute("fehlermeldung", "Preis darf nicht leer sein");
-        }
-
-        String beschreibung = request.getParameter("beschreibung");
-        String[] kategorien = request.getParameterValues("kategorie");
-        Date currentDate = new Date();
-        java.sql.Date sqlDate = new java.sql.Date(currentDate.getTime());
-
-
-
-        anzeige.setTitel(titel);
-        anzeige.setPreis(preis);
-        anzeige.setBeschreibung(beschreibung);
-        anzeige.setKategorien(kategorien);
-        anzeige.setErstellungsDatum(currentDate);
-        anzeige.setErsteller(currentUser);
-
-
         con = null;
 
         try {
             con = DBUtil.getExternalConnection("insdb");
             con.setAutoCommit(false);
+
+
+            String titel = request.getParameter("titel");
+            Double preis;
+
+            if(!request.getParameter("preis").isEmpty()) {
+                preis = Double.parseDouble(request.getParameter("preis"));
+            } else {
+                keineFehler = false;
+                preis = 0d;
+                request.setAttribute("fehlermeldung", "Preis darf nicht leer sein");
+            }
+
+            String beschreibung = request.getParameter("beschreibung");
+            String[] kategorien = request.getParameterValues("kategorie");
+
+            anzeige.setTitel(titel);
+            anzeige.setPreis(preis);
+            anzeige.setBeschreibung(beschreibung);
+            anzeige.setKategorien(kategorien);
 
             if(titel.length() > 100 || titel.length() < 1) {
 
@@ -99,33 +122,23 @@ public final class AnzeigeErstellenServlet extends HttpServlet {
 
             if(keineFehler){
 
-                String generatedColumns[] = {"ID"};
-
-                final String query = "INSERT INTO dbp47.anzeige VALUES (DEFAULT,?,?,?,?,?,?)";
-                PreparedStatement preparedStatementAnzeige = con.prepareStatement(query, generatedColumns);
+                final String query = "UPDATE dbp47.anzeige SET titel = ?, text= ?, preis = ? WHERE id = ?";
+                PreparedStatement preparedStatementAnzeige = con.prepareStatement(query);
                 preparedStatementAnzeige.setString(1, anzeige.getTitel());
                 preparedStatementAnzeige.setString(2, anzeige.getBeschreibung());
                 preparedStatementAnzeige.setDouble(3, anzeige.getPreis());
-                preparedStatementAnzeige.setDate(4, sqlDate);
-                preparedStatementAnzeige.setString(5, currentUser);
-                preparedStatementAnzeige.setString(6, "aktiv");
+                preparedStatementAnzeige.setString(4, request.getParameter("ID"));
                 preparedStatementAnzeige.execute();
 
-                ResultSet rs = preparedStatementAnzeige.getGeneratedKeys();
-                int anzeigeId = 0;
-                if (rs.next()) {
-                    anzeigeId = rs.getInt(1);
-                }
 
-
-                for (String kategorie : kategorien) {
+                /*for (String kategorie : kategorien) {
                     final String statementKategorie = "INSERT INTO dbp47.HatKategorie VALUES(?,?)";
                     PreparedStatement preparedStatementKategorie = con.prepareStatement(statementKategorie);
                     preparedStatementKategorie.setInt(1, anzeigeId);
                     preparedStatementKategorie.setString(2, kategorie);
                     preparedStatementKategorie.execute();
                 }
-                request.setAttribute("anzeigeid", anzeigeId);
+                request.setAttribute("anzeigeid", anzeigeId);*/
                 con.commit();
             }
 

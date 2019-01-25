@@ -38,6 +38,9 @@
 
   <input type="submit" value="Erstellen" />
   </form>
+
+  <p> <font color = red> ${fehlermeldung} </font> </p>
+  <p ${erfolgreich}> <font color = green> <a href="anzeige_details?ID=${anzeigeid}">Anzeige wurde erfolgreich erstellt.</a> </font> </p>
  
 
 </body>

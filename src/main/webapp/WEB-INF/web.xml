@@ -94,6 +94,16 @@
         <url-pattern>/user_profile</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>anzeige_editieren_servlet</servlet-name>
+        <servlet-class>de.unidue.inf.is.AnzeigeEditierenServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>anzeige_editieren_servlet</servlet-name>
+        <url-pattern>/anzeige_editieren</url-pattern>
+    </servlet-mapping>
+
+
     <!-- ******************************************************** -->
 
     <security-constraint>
