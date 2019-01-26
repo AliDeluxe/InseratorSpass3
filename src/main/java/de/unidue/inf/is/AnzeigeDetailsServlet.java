@@ -141,7 +141,7 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
                 kaufen();
 
             } else {
-                System.out.println("Kann nicht eigene Anzeige kaufen!");
+                //TODO fehlermeldung anzeigen lassen
             }
 
 
