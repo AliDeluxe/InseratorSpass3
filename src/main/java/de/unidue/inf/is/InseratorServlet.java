@@ -24,7 +24,7 @@ public final class InseratorServlet extends HttpServlet {
                     throws ServletException, IOException {
   
 	final String databaseToCheck = "insdb";
-        boolean databaseExists = DBUtil.checkDatabaseExists(databaseToCheck);
+        boolean databaseExists = DBUtil.checkDatabaseExistsExternal(databaseToCheck);
 
         request.setAttribute("db2name", databaseToCheck);
 

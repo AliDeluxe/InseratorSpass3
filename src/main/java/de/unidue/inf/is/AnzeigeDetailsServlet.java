@@ -19,6 +19,12 @@ import java.util.List;
  */
 public final class AnzeigeDetailsServlet extends HttpServlet {
 
+    //Muessen mit den ftl name tags ueberseinstimmen!
+    public static final String LOESCHEN_BUTTON = "loeschen";
+    public static final String KAUFEN_BUTTON = "kaufen";
+    public static final String KOMMENTAR_BUTTON = "submitKommentar";
+
+
     private Anzeige anzeige;
     private boolean gelöscht = false;
 
@@ -39,9 +45,9 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
 
         kommentarList.clear();
 
-        if(gelöscht) {
+        if (gelöscht) {
             gelöscht = false;
-            request.getRequestDispatcher("anzeige_gelöscht.ftl").forward(request,response);
+            request.getRequestDispatcher("anzeige_gelöscht.ftl").forward(request, response);
 
         } else {
 
@@ -49,6 +55,7 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
 
                 anzeige = new Anzeige();
                 con = DBUtil.getExternalConnection("insdb");
+                con.setAutoCommit(false);
                 String query = "SELECT * FROM dbp47.anzeige WHERE id = ?";
                 PreparedStatement preparedStatement = con.prepareStatement(query);
                 preparedStatement.setString(1, request.getParameter("ID"));
@@ -75,26 +82,31 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
                 preparedStatementHatKommentar.setString(1, request.getParameter("ID"));
                 ResultSet resultsHatKommentar = preparedStatementHatKommentar.executeQuery();
 
-                while(resultsHatKommentar.next()) {
+                while (resultsHatKommentar.next()) {
 
                     Kommentar kommentar = new Kommentar();
 
                     String sqlQueryKommentar = "SELECT * FROM dbp47.kommentar WHERE id=?";
                     PreparedStatement preparedStatementKommentar = con.prepareStatement(sqlQueryKommentar);
-                    preparedStatementKommentar.setShort(1,resultsHatKommentar.getShort("kommentarid"));
+                    preparedStatementKommentar.setShort(1, resultsHatKommentar.getShort("kommentarid"));
                     ResultSet resultsKommentar = preparedStatementKommentar.executeQuery();
 
-                    while(resultsKommentar.next()) {
+                    while (resultsKommentar.next()) {
 
                         kommentar.setText(resultsKommentar.getString("text"));
                         kommentar.setKommentator(resultsHatKommentar.getString("benutzername"));
                         kommentarList.add(kommentar);
                     }
                 }
-
+                con.commit();
 
             } catch (SQLException e) {
                 e.printStackTrace();
+                try {
+                    con.rollback();
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
             } finally {
                 try {
                     con.close();
@@ -103,7 +115,7 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
                 }
             }
 
-            request.setAttribute("kommentarListe",kommentarList);
+            request.setAttribute("kommentarListe", kommentarList);
             request.getRequestDispatcher("anzeige_details.ftl").forward(request, response);
 
         }
@@ -114,85 +126,94 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
 
-        //TODO request.getParameter(löschen) crasht wenn man kaufen drückt...
 
-        if(false){
+        if (request.getParameter(LOESCHEN_BUTTON) != null) {
+            if (anzeige.getErsteller().equals(currentuser)) {
 
-            //TODO nur ausführbar wenn man selber ersteller ist
-            gelöscht = true;
-            löschen();
-            System.out.println("löschen");
+                gelöscht = true;
+                löschen();
+            }
 
-        } else if(false) {
+        } else if (request.getParameter(KAUFEN_BUTTON) != null) {
 
-            //TODO nur ausführbar wenn man nicht selber ersteller ist
-            kaufen();
-            System.out.println("kaufen");
+            if (!anzeige.getErsteller().equals(currentuser)) {
 
-        } else {
+                kaufen();
 
-            if(!request.getParameter("kommentar").isEmpty()) {
+            } else {
+                System.out.println("Kann nicht eigene Anzeige kaufen!");
+            }
+
+
+        } else if (request.getParameter(KOMMENTAR_BUTTON) != null) {
+
+            try {
+
+                con = DBUtil.getExternalConnection("insdb");
+                con.setAutoCommit(false);
+
+                String generatedColumns[] = {"ID"};
+
+                final String queryKommentar = "INSERT INTO dbp47.kommentar VALUES (DEFAULT,?,DEFAULT)";
+                PreparedStatement preparedStatementKommentar = con.prepareStatement(queryKommentar, generatedColumns);
+                preparedStatementKommentar.setString(1, request.getParameter("kommentar"));
+                preparedStatementKommentar.executeUpdate();
+
+                ResultSet rs = preparedStatementKommentar.getGeneratedKeys();
+                short kommentarId = 0;
+                if (rs.next()) {
+                    kommentarId = rs.getShort(1);
+                }
+
+                final String queryHatKommentar = "INSERT INTO dbp47.hatKommentar VALUES (?,?,?)";
+                PreparedStatement preparedStatementHatKommentar = con.prepareStatement(queryHatKommentar);
+                preparedStatementHatKommentar.setShort(1, kommentarId);
+                preparedStatementHatKommentar.setString(2, currentuser);
+                preparedStatementHatKommentar.setShort(3, Short.parseShort(request.getParameter("ID")));
+                preparedStatementHatKommentar.executeUpdate();
+
+                con.commit();
+
+            } catch (SQLException e) {
                 try {
+                    con.rollback();
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+                e.printStackTrace();
 
-                    con = DBUtil.getExternalConnection("insdb");
-                    con.setAutoCommit(false);
-
-                    String generatedColumns[] = {"ID"};
-
-                    final String queryKommentar = "INSERT INTO dbp47.kommentar VALUES (DEFAULT,?,DEFAULT)";
-                    PreparedStatement preparedStatementKommentar = con.prepareStatement(queryKommentar, generatedColumns);
-                    preparedStatementKommentar.setString(1, request.getParameter("kommentar"));
-                    preparedStatementKommentar.executeUpdate();
-
-                    ResultSet rs = preparedStatementKommentar.getGeneratedKeys();
-                    short kommentarId = 0;
-                    if (rs.next()) {
-                        kommentarId = rs.getShort(1);
-                    }
-
-                    final String queryHatKommentar = "INSERT INTO dbp47.hatKommentar VALUES (?,?,?)";
-                    PreparedStatement preparedStatementHatKommentar = con.prepareStatement(queryHatKommentar);
-                    preparedStatementHatKommentar.setShort(1, kommentarId);
-                    preparedStatementHatKommentar.setString(2, currentuser);
-                    preparedStatementHatKommentar.setShort(3, Short.parseShort(request.getParameter("ID")));
-                    preparedStatementHatKommentar.executeUpdate();
-
-                    con.commit();
-
+            } finally {
+                try {
+                    con.close();
                 } catch (SQLException e) {
-                    try {
-                        con.rollback();
-                    } catch (SQLException e1) {
-                        e1.printStackTrace();
-                    }
                     e.printStackTrace();
-
-                } finally {
-                    try {
-                        con.close();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
                 }
             }
+
         }
 
-        doGet(request,response);
+        doGet(request, response);
     }
 
     private void kaufen() {
         try {
             con = DBUtil.getExternalConnection("insdb");
+            con.setAutoCommit(false);
             final String query = "INSERT INTO dbp47.kauft VALUES (?,?,DEFAULT)";
             PreparedStatement preparedStatementAnzeige = con.prepareStatement(query);
             preparedStatementAnzeige.setString(1, currentuser);
             preparedStatementAnzeige.setShort(2, anzeige.getId());
             preparedStatementAnzeige.execute();
+            con.commit();
 
 
         } catch (SQLException e) {
             e.printStackTrace();
-
+            try {
+                con.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
         } finally {
             try {
                 con.close();
@@ -206,14 +227,20 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
 
         try {
             con = DBUtil.getExternalConnection("insdb");
+            con.setAutoCommit(false);
             final String query = "DELETE FROM dbp47.anzeige WHERE id=?";
             PreparedStatement preparedStatementAnzeige = con.prepareStatement(query);
             preparedStatementAnzeige.setShort(1, anzeige.getId());
             preparedStatementAnzeige.execute();
-
+            con.commit();
 
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                con.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
 
         } finally {
             try {

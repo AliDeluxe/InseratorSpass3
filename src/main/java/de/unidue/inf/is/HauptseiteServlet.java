@@ -32,7 +32,7 @@ public final class HauptseiteServlet extends HttpServlet {
 
         try {
             con = DBUtil.getExternalConnection("insdb");
-
+            con.setAutoCommit(false);
 
             String query = "SELECT * FROM dbp47.anzeige WHERE status = 'aktiv'";
             Statement statement = con.createStatement();
@@ -52,9 +52,16 @@ public final class HauptseiteServlet extends HttpServlet {
 
             }
 
+            con.commit();
+
 
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                con.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
         } finally {
             if (con != null) {
                 try {

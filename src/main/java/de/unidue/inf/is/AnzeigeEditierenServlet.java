@@ -32,6 +32,7 @@ public final class AnzeigeEditierenServlet extends HttpServlet {
 
         try {
             con = DBUtil.getExternalConnection("insdb");
+            con.setAutoCommit(false);
 
             String sqlQuery = "SELECT * FROM dbp47.anzeige WHERE id=?";
             PreparedStatement preparedStatementSelect = con.prepareStatement(sqlQuery);
@@ -45,9 +46,15 @@ public final class AnzeigeEditierenServlet extends HttpServlet {
                 request.setAttribute("beschreibung", resultsSelect.getString("text")+"-");
 
             }
-
+            con.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            try{
+                con.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+
         } finally {
             try {
                 con.close();

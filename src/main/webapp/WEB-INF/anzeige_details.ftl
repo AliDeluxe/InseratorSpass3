@@ -26,7 +26,7 @@
 
 
   <form name="kaufen" action="" method="post">
-  <input type="submit" value="Kaufen" />
+  <input type="submit" name="kaufen" value="Kaufen" />
   </form>
 
   <form name="löschen" action="" method="post">
@@ -54,7 +54,7 @@
         <h3>Schreibe einen Kommentar: </h3>
         <input type="textarea" name="kommentar" style="width:400px;height:100px;"/> <br> <br>
 
-        <input type="submit" value="Kommentar abschicken" />
+        <input type="submit" name="submitKommentar" value="Kommentar abschicken" />
 
         </form>
 

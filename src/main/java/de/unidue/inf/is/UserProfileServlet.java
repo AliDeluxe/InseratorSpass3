@@ -33,6 +33,7 @@ public final class UserProfileServlet extends HttpServlet {
         try {
             username = request.getParameter("Ersteller");
             con = DBUtil.getExternalConnection("insdb");
+            con.setAutoCommit(false);
             String sqlStatementBenutzer = "SELECT * FROM dbp47.benutzer WHERE benutzername = ?";
             PreparedStatement preparedStatementBenutzer = con.prepareStatement(sqlStatementBenutzer);
             preparedStatementBenutzer.setString(1, username);
@@ -108,10 +109,15 @@ public final class UserProfileServlet extends HttpServlet {
 
 
             request.setAttribute("anzeigeListeGekauft", anzeigeListeGekauft);
-
+            con.commit();
 
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                con.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
         } finally {
             if (con != null) {
                 try {

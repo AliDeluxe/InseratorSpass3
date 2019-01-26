@@ -54,7 +54,6 @@ public final class DBUtil {
 		String rechnername = properties.getProperty("rechnername");
 		
 		String gruppennummer = user.substring(user.length()-2,user.length());
-		System.out.println(gruppennummer);
 
         final String url = "jdbc:db2://"+rechnername+".is.inf.uni-due.de:500"+gruppennummer+"/" + database + ":currentSchema="+user+";";
         Connection connection = DriverManager.getConnection(url, user,pass);
