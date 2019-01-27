@@ -1,7 +1,9 @@
 package de.unidue.inf.is;
 
 import java.io.IOException;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -10,32 +12,62 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import de.unidue.inf.is.domain.User;
+import de.unidue.inf.is.utils.DBUtil;
 
 
-
-/**
- * Einfaches Beispiel, das die Vewendung der Template-Engine zeigt.
- */
 public final class HelloServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+    private Connection con;
+
 
     private static List<User> userList = new ArrayList<>();
-
-    // Just prepare static data to display on screen
-    static {
-        userList.add(new User("Bill", "Gates"));
-        userList.add(new User("Steve", "Jobs"));
-        userList.add(new User("Larry", "Page"));
-        userList.add(new User("Sergey", "Brin"));
-        userList.add(new User("Larry", "Ellison"));
-    }
 
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // Put the user list in request and let freemarker paint it.
         // Verbindet SERVLET class mit ftl
+
+        
+
+        try {
+            userList.clear();
+
+            con = DBUtil.getExternalConnection("insdb");
+            con.setAutoCommit(false);
+            String query = "SELECT * FROM dbp47.Benutzer";
+            Statement statement = con.createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
+
+            while(resultSet.next()){
+                User user = new User();
+                user.setUsername(resultSet.getString("benutzername"));
+                String name = resultSet.getString("name");
+                String[] subStrings = name.split("\\s+");
+                user.setFirstname(subStrings[0]);
+                user.setLastname(subStrings[1]);
+                userList.add(user);
+            }
+
+            con.commit();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            try {
+                con.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        }finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+
         request.setAttribute("users", userList);
 
         request.getRequestDispatcher("/hello.ftl").forward(request, response);
@@ -44,15 +76,47 @@ public final class HelloServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
-                    IOException {
+            IOException {
 
+        Date currentDate = new Date();
+        java.sql.Date sqlDate = new java.sql.Date(currentDate.getTime());
+
+        String username = request.getParameter("username");
         String firstname = request.getParameter("firstname");
         String lastname = request.getParameter("lastname");
 
-        if (null != firstname && null != lastname && !firstname.isEmpty() && !lastname.isEmpty()) {
+        if (null != username && null != firstname && null != lastname && !firstname.isEmpty() && !lastname.isEmpty() && !username.isEmpty()) {
 
             synchronized (userList) {
-                userList.add(new User(firstname, lastname));
+
+                try {
+                    con = DBUtil.getExternalConnection("insdb");
+                    con.setAutoCommit(false);
+                    String insert = "INSERT INTO dbp47.Benutzer (benutzername, name, eintrittsdatum)" +
+                            "VALUES (?,?,?)";
+                    PreparedStatement preparedStatement = con.prepareStatement(insert);
+                    preparedStatement.setString(1, username);
+                    preparedStatement.setString(2, firstname + " " + lastname);
+                    preparedStatement.setDate(3, sqlDate);
+                    preparedStatement.execute();
+                    con.commit();
+
+                } catch (SQLException e) {
+                    try {
+                        con.rollback();
+                    } catch (SQLException e1) {
+                        e1.printStackTrace();
+                    }
+                    e.printStackTrace();
+
+                } finally {
+                    try {
+                        con.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+
             }
 
         }

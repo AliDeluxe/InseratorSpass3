@@ -2,6 +2,7 @@ package de.unidue.inf.is;
 
 import de.unidue.inf.is.domain.Anzeige;
 import de.unidue.inf.is.domain.Kommentar;
+import de.unidue.inf.is.utils.CurrentUserUtil;
 import de.unidue.inf.is.utils.DBUtil;
 
 import javax.servlet.ServletException;
@@ -28,7 +29,7 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
     private Anzeige anzeige;
     private boolean gelöscht = false;
 
-    private String currentuser = "sonichu";
+    private String currentuser;
 
     private static List<Kommentar> kommentarList = new ArrayList<>();
 
@@ -43,6 +44,8 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
+        currentuser = CurrentUserUtil.currentuser;
+        System.out.println("currentuser in Anzeigedetails: "+ currentuser);
         kommentarList.clear();
 
         if (gelöscht) {
@@ -132,6 +135,10 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
 
                 gelöscht = true;
                 löschen();
+            }else{
+                System.out.println("loeschen fehlerhaft");
+                System.out.println("Anzeigenersteller: " + anzeige.getErsteller());
+                System.out.println("Currentuser: " +currentuser);
             }
 
         } else if (request.getParameter(KAUFEN_BUTTON) != null) {

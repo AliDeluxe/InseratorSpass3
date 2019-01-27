@@ -20,9 +20,12 @@
 
    </#list>
 
-   <form name="neueAnzeige" action="/anzeige_erstellen" method="get">
-       <input type="submit" value="Neue Anzeige Erstellen" />
-       </form>
+	
+	
+
+
+   <a href="anzeige_erstellen?currentUser=${currentUser}"> Neue Anzeige erstellen </a>
+   
 
 </body>
 </html>
