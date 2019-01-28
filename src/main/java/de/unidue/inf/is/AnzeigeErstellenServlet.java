@@ -23,10 +23,13 @@ public final class AnzeigeErstellenServlet extends HttpServlet {
     private boolean ersterAufruf = true;
     private boolean keineFehler;
 
-    private String currentUser = "sonichu";
+    private String currentUser;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        currentUser = request.getParameter("currentUser");
+        System.out.println("currentuser in anzeige erstellen is: " + currentUser);
 
          if(keineFehler){
 
@@ -50,6 +53,7 @@ public final class AnzeigeErstellenServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
+
 
         keineFehler = true;
         ersterAufruf = false;

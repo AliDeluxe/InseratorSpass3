@@ -1,6 +1,7 @@
 package de.unidue.inf.is;
 
 import de.unidue.inf.is.domain.Anzeige;
+import de.unidue.inf.is.utils.CurrentUserUtil;
 import de.unidue.inf.is.utils.DBUtil;
 
 import javax.servlet.ServletException;
@@ -22,10 +23,12 @@ public final class AnzeigeEditierenServlet extends HttpServlet {
     private Anzeige anzeige = new Anzeige();
     private boolean ersterAufruf = true;
     private boolean keineFehler;
+    private String currentUser;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
+        currentUser = CurrentUserUtil.currentuser;
         request.setAttribute("anzeigeid",request.getParameter("ID"));
 
         con = null;

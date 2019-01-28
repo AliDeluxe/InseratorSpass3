@@ -1,6 +1,7 @@
 package de.unidue.inf.is;
 
 import de.unidue.inf.is.domain.Anzeige;
+import de.unidue.inf.is.utils.CurrentUserUtil;
 import de.unidue.inf.is.utils.DBUtil;
 
 import javax.servlet.ServletException;
@@ -20,13 +21,14 @@ public final class HauptseiteServlet extends HttpServlet {
 
     private static List<Anzeige> anzeigeListe = new ArrayList<>();
     private Connection con;
-
     private static final long serialVersionUID = 1L;
-
+    private String currentUser = "";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Put the user list in request and let freemarker paint it.
+        currentUser = request.getParameter("currentUser");
+        CurrentUserUtil.currentuser = currentUser;
+        System.out.println("currentuser in hauptseite: " + currentUser);
         con = null;
         anzeigeListe.clear();
 
@@ -133,6 +135,7 @@ public final class HauptseiteServlet extends HttpServlet {
         }
 
 
+        request.setAttribute("currentUser", currentUser);
         request.setAttribute("anzeigeListe", anzeigeListe);
         request.getRequestDispatcher("hauptseite.ftl").forward(request, response);
 
