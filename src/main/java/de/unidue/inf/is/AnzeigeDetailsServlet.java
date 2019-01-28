@@ -36,16 +36,12 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
     private Connection con;
     private static final long serialVersionUID = 1L;
 
-    //TODO Kaufen nicht möglich wenn schon verkauft und status anzeigen
-
-    //TODO Anzeige editieren link nicht anzeigen wenn currentuser != ersteller (in ftl)
-
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         currentuser = CurrentUserUtil.currentuser;
-        System.out.println("currentuser in Anzeigedetails: "+ currentuser);
+        System.out.println("currentuser in Anzeigedetails: " + currentuser);
         kommentarList.clear();
 
         if (gelöscht) {
@@ -58,7 +54,6 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
 
                 anzeige = new Anzeige();
                 con = DBUtil.getExternalConnection("insdb");
-                con.setAutoCommit(false);
                 String query = "SELECT * FROM dbp47.anzeige WHERE id = ?";
                 PreparedStatement preparedStatement = con.prepareStatement(query);
                 preparedStatement.setString(1, request.getParameter("ID"));
@@ -101,20 +96,17 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
                         kommentarList.add(kommentar);
                     }
                 }
-                con.commit();
 
             } catch (SQLException e) {
                 e.printStackTrace();
-                try {
-                    con.rollback();
-                } catch (SQLException e1) {
-                    e1.printStackTrace();
-                }
+
             } finally {
-                try {
-                    con.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                if (con != null) {
+                    try {
+                        con.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 
@@ -135,10 +127,10 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
 
                 gelöscht = true;
                 löschen();
-            }else{
+            } else {
                 System.out.println("loeschen fehlerhaft");
                 System.out.println("Anzeigenersteller: " + anzeige.getErsteller());
-                System.out.println("Currentuser: " +currentuser);
+                System.out.println("Currentuser: " + currentuser);
             }
 
         } else if (request.getParameter(KAUFEN_BUTTON) != null) {
@@ -148,7 +140,7 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
                 kaufen();
 
             } else {
-                //TODO fehlermeldung anzeigen lassen
+                System.out.println("Du kannst nicht deine eigene Anzeige kaufen...");
             }
 
 
@@ -190,10 +182,12 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
                 e.printStackTrace();
 
             } finally {
-                try {
-                    con.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                if (con != null) {
+                    try {
+                        con.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 
@@ -222,10 +216,12 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
                 e1.printStackTrace();
             }
         } finally {
-            try {
-                con.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -250,10 +246,12 @@ public final class AnzeigeDetailsServlet extends HttpServlet {
             }
 
         } finally {
-            try {
-                con.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

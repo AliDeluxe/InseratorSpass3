@@ -9,7 +9,7 @@
     <p> Deine Anzeige wurde erfolgreich gelöscht </p> <br>
 
 
-  <a href="hello">Zurück zur Anmeldeseite</a> <br> <br>
+  <a href="hauptseite">Zurück zur Hauptseite</a> <br> <br>
 
 
 

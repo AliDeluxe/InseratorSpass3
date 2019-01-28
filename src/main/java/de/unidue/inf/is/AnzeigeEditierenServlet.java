@@ -59,10 +59,12 @@ public final class AnzeigeEditierenServlet extends HttpServlet {
             }
 
         } finally {
-            try {
-                con.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

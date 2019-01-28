@@ -22,12 +22,18 @@ public final class HauptseiteServlet extends HttpServlet {
     private static List<Anzeige> anzeigeListe = new ArrayList<>();
     private Connection con;
     private static final long serialVersionUID = 1L;
-    private String currentUser = "";
+    private String currentUser ;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        currentUser = request.getParameter("currentUser");
-        CurrentUserUtil.currentuser = currentUser;
+
+        if(request.getParameter("currentUser") != null){
+            currentUser = request.getParameter("currentUser");
+            CurrentUserUtil.currentuser = currentUser;
+        }
+
+
+
         System.out.println("currentuser in hauptseite: " + currentUser);
         con = null;
         anzeigeListe.clear();
@@ -36,7 +42,6 @@ public final class HauptseiteServlet extends HttpServlet {
 
         try {
             con = DBUtil.getExternalConnection("insdb");
-            con.setAutoCommit(false);
 
             String sortieren = request.getParameter("sortieren");
             String filtern = request.getParameter("filtern");
@@ -114,16 +119,8 @@ public final class HauptseiteServlet extends HttpServlet {
 
             }
 
-            con.commit();
-
-
         } catch (SQLException e) {
             e.printStackTrace();
-            try {
-                con.rollback();
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-            }
         } finally {
             if (con != null) {
                 try {

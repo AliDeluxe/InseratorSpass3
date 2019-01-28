@@ -35,7 +35,6 @@ public final class HelloServlet extends HttpServlet {
             userList.clear();
 
             con = DBUtil.getExternalConnection("insdb");
-            con.setAutoCommit(false);
             String query = "SELECT * FROM dbp47.Benutzer";
             Statement statement = con.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
@@ -50,20 +49,15 @@ public final class HelloServlet extends HttpServlet {
                 userList.add(user);
             }
 
-            con.commit();
-
         } catch (SQLException e) {
             e.printStackTrace();
-            try {
-                con.rollback();
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-            }
         }finally {
-            try {
-                con.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -110,10 +104,12 @@ public final class HelloServlet extends HttpServlet {
                     e.printStackTrace();
 
                 } finally {
-                    try {
-                        con.close();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
+                    if (con != null) {
+                        try {
+                            con.close();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
 
