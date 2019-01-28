@@ -6,6 +6,31 @@
  
 <body>
 
+<form name="aktualisieren" action="" method"get">
+  <p> Sortieren nach:
+  <select name="sortieren">
+      <option value="nicht">-Bitte auswählen-</option>
+      <option value="titel asc">Titel Aufsteigend</option>
+      <option value="titel desc">Titel Absteigend</option>
+      <option value="erstellungsdatum asc">Datum Neu zuerst</option>
+      <option value="erstellungsdatum desc">Datum Alt zuerst</option>
+    </select>
+
+  Filtern nach:
+  <select name="filtern">
+      <option value="nicht">-Bitte auswählen-</option>
+      <option value="Digitale Waren">Digitale Waren</option>
+      <option value="Haus & Garten">Haus & Garten</option>
+      <option value="Mode & Kosmetik">Mode & Kosmetik</option>
+      <option value="Multimedia & Elektronik">Elektronik & Multimedia</option>
+    </select>
+    </p>
+
+
+    <input type="submit" value="Aktualisieren">
+    </form>
+
+
 
   <#list anzeigeListe as anzeige>
 

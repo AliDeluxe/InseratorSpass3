@@ -30,14 +30,74 @@ public final class HauptseiteServlet extends HttpServlet {
         con = null;
         anzeigeListe.clear();
 
+        ResultSet resultset = null;
+
         try {
             con = DBUtil.getExternalConnection("insdb");
             con.setAutoCommit(false);
 
-            String query = "SELECT * FROM dbp47.anzeige WHERE status = 'aktiv'";
-            Statement statement = con.createStatement();
+            String sortieren = request.getParameter("sortieren");
+            String filtern = request.getParameter("filtern");
 
-            ResultSet resultset = statement.executeQuery(query);
+
+            if(sortieren != null) {
+                if (sortieren.equals("nicht")) {
+                    sortieren = null;
+                }
+            }
+
+            if(filtern != null) {
+                if (filtern.equals("nicht")) {
+                    filtern = null;
+                }
+            }
+
+            if(sortieren != null && filtern != null) {
+
+                String queryKategorie = "SELECT * FROM dbp47.hatKategorie WHERE kategorie = ?";
+                PreparedStatement preparedStatementKategorie = con.prepareStatement(queryKategorie);
+                preparedStatementKategorie.setString(1, filtern);
+                ResultSet resultsKategorie = preparedStatementKategorie.executeQuery();
+
+                while(resultsKategorie.next()) {
+
+                    String query = "SELECT * FROM dbp47.anzeige WHERE status = 'aktiv' AND id = ? ORDER BY " + sortieren;
+                    PreparedStatement preparedStatement = con.prepareStatement(query);
+                    preparedStatement.setShort(1, resultsKategorie.getShort("anzeigeID"));
+                    resultset = preparedStatement.executeQuery();
+
+                }
+
+            } else if(sortieren != null && filtern == null) {
+
+                String query = "SELECT * FROM dbp47.anzeige WHERE status = 'aktiv' ORDER BY "+ sortieren;
+                Statement statement = con.createStatement();
+                resultset = statement.executeQuery(query);
+
+            } else if(sortieren == null && filtern != null) {
+                String queryKategorie = "SELECT * FROM dbp47.hatKategorie WHERE kategorie = ?";
+                PreparedStatement preparedStatementKategorie = con.prepareStatement(queryKategorie);
+                preparedStatementKategorie.setString(1, filtern);
+                ResultSet resultsKategorie = preparedStatementKategorie.executeQuery();
+
+                while(resultsKategorie.next()) {
+
+                    String query = "SELECT * FROM dbp47.anzeige WHERE status = 'aktiv' AND id = ?";
+                    PreparedStatement preparedStatement = con.prepareStatement(query);
+                    preparedStatement.setShort(1, resultsKategorie.getShort("anzeigeID"));
+                    resultset = preparedStatement.executeQuery();
+
+                }
+
+            } else {
+
+                String query = "SELECT * FROM dbp47.anzeige WHERE status = 'aktiv'";
+                Statement statement = con.createStatement();
+
+                resultset = statement.executeQuery(query);
+
+            }
+
 
 
             while (resultset.next()) {
